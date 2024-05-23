@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import './Login.css'
+import './Login.css';
+
 const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoggedin, setIsLoggedin] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,18 +21,22 @@ const Login = () => {
 
     try {
       const response = await axios.post('http://localhost:8000/api/login', { username, password });
-      const { success, message } = response.data;
+      const { success, message, username: loggedInUsername } = response.data;
 
       if (success) {
         console.log(message);
-        navigate('/');
+        setIsLoggedin(true); // Set login state to true
+        // Optionally, you might want to store the loggedInUsername in a different state
+        navigate('/', { state: { isLoggedin: true, username: loggedInUsername } }); // Pass state to next component
       } else {
         setError(message);
       }
     } catch (err) {
       setError('An error occurred during login');
       console.error(err.message);
-      console.error(err.response.data);
+      if (err.response && err.response.data) {
+        console.error(err.response.data);
+      }
     }
   };
 

@@ -47,11 +47,12 @@ app.post('/api/login', (req, res) => {
     if (results.length === 0) {
       return res.status(401).json({ success: false, message: 'Invalid username or password' });
     }
-
-    // User exists, return success message
-    return res.status(200).json({ success: true, message: 'Login successful' });
+    // User exists, return success message with username
+    return res.status(200).json({ success: true, message: 'Login successful', username});
+    console.log(username);
   });
 });
+
 
 
 
