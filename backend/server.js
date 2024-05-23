@@ -49,7 +49,6 @@ app.post('/api/login', (req, res) => {
     }
     // User exists, return success message with username
     return res.status(200).json({ success: true, message: 'Login successful', username});
-    console.log(username);
   });
 });
 
@@ -58,7 +57,7 @@ app.post('/api/login', (req, res) => {
 
 
 app.post('/api/match_info', (req, res) => {
-  const { team1, team2, venue, time_s, match_description, date } = req.body;
+  const { team1, team2, venue, time_s, match_description, date, overs } = req.body;
 
   // Convert the date string to a Date object
   const dateObj = new Date(date);
@@ -67,8 +66,8 @@ app.post('/api/match_info', (req, res) => {
   const formattedDate = dateObj.toISOString().split('T')[0];
 
   // Insert data into matchInfo table
-  const sql = `INSERT INTO matchInfo (Team1, Team2, venue, mTime, Description, mDate, createdDate, modifiedDate) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`;
-  const values = [team1, team2, venue, time_s, match_description, formattedDate];
+  const sql = `INSERT INTO matchInfo (Team1, Team2, venue, mTime, Description, mDate, createdDate, modifiedDate, overs) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)`;
+  const values = [team1, team2, venue, time_s, match_description, formattedDate, overs]; // Include overs here
 
   connection.query(sql, values, (err, result) => {
     if (err) {
@@ -81,6 +80,7 @@ app.post('/api/match_info', (req, res) => {
     res.status(201).json({ id: result.insertId });
   });
 });
+
 
 
 //Inserting Squad Data 

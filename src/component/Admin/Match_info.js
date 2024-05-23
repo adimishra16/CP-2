@@ -10,7 +10,8 @@ const MatchForm = () => {
     venue: '',
     time_s: '',
     match_description: '',
-    date: ''
+    date: '',
+    overs:''
   });
   const [formError, setFormError] = useState('');
   const [createdId, setCreatedId] = useState(null);
@@ -67,13 +68,15 @@ const MatchForm = () => {
             venue: '',
             time_s: '',
             match_description: '',
-            date: ''
+            date: '',
+            overs:''
           });
           navigate('/Squad_info', {
             state: {
               team1: formData.team1,
               team2: formData.team2,
-              mID: data.id
+              mID: data.id,
+              overs: formData.overs
             }
           });
           console.log(data.id);
@@ -118,6 +121,16 @@ const MatchForm = () => {
             id="venue"
             name="venue"
             value={formData.venue}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="venue">Overs:</label>
+          <input
+            type="number"
+            id="overs"
+            name="overs"
+            value={formData.overs}
             onChange={handleChange}
           />
         </div>

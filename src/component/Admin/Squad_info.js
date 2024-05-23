@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import './Squad_info.css';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Papa from 'papaparse';
 
 const AddPlayersForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { team1, team2, mID } = location.state;
+  const { team1, team2, mID,overs} = location.state;
   const [team1Players, setTeam1Players] = useState(Array(11).fill({ name: '', role: '' }));
   const [team2Players, setTeam2Players] = useState(Array(11).fill({ name: '', role: '' }));
 
@@ -31,6 +32,29 @@ const AddPlayersForm = () => {
       const updatedPlayers = [...team2Players];
       updatedPlayers[index] = { ...updatedPlayers[index], role };
       setTeam2Players(updatedPlayers);
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      Papa.parse(file, {
+        header: true,
+        complete: (results) => {
+          const players = results.data;
+          const team1ParsedPlayers = players.slice(0, 11).map(player => ({
+            name: player.name || '',
+            role: player.role || '',
+          }));
+          const team2ParsedPlayers = players.slice(11, 22).map(player => ({
+            name: player.name || '',
+            role: player.role || '',
+          }));
+          setTeam1Players(team1ParsedPlayers);
+          setTeam2Players(team2ParsedPlayers);
+        },
+        // ...
+      }); 
     }
   };
 
@@ -122,12 +146,18 @@ const AddPlayersForm = () => {
       console.error('Error occurred while sending data to backend:', error);
     }
 
-    navigate('/Score',{ state: { mID: mID } });
+    navigate('/Score', { state: {
+      team1: team1,
+      team2: team2,
+      mID: mID,
+      overs:overs
+    } });
   };
 
   return (
     <div>
       <h2>Add Players</h2>
+      <input type="file" accept=".csv" onChange={handleFileUpload} />
       <form onSubmit={handleSubmit} className="team-form">
         <div className="team-left">
           <h3>{team1 || 'Team 1'}</h3>
