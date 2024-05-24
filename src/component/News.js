@@ -14,10 +14,10 @@ class News extends Component {
 
   async componentDidMount() {
     const apiKey = 'YOUR_API_KEY_HERE'; // Replace with your NewsAPI key
-    const url = `https://newsapi.org/v2/everything?q=cricket&from=2024-05-22&to=2024-05-22&sortBy=popularity&apiKey=18d8d375662c40b69d499247133572b6`;
+    const url = `https://newsapi.org/v2/top-headlines?country=us&category=sports&apiKey=18d8d375662c40b69d499247133572b6`;
     try {
       const response = await axios.get(url);
-      this.setState({ articles: response.data.articles, loading: false });
+      this.setState({ articles: response.data.articles.slice(0, 10), loading: false }); // Limit articles to 10
     } catch (error) {
       console.error('Error fetching the news articles:', error);
       this.setState({ loading: false });

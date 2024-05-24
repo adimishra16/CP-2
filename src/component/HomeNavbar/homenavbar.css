@@ -1,0 +1,42 @@
+/* homenavbar.css */
+
+.id {
+    background-color: linear-gradient(135deg, #122638, #1d415f); /* Background color of the navigation */
+    padding: 10px 0; /* Padding around the navigation */
+  }
+  id1{
+    display: flex; /* Display navigation items horizontally */
+    margin-right: 20px;
+    justify-content: space-around;
+  }
+  .id ul {
+    list-style-type: none; /* Remove default list styles */
+    margin: 0;
+    padding: 0;
+    text-align: center; 
+    display: flex; /* Display navigation items horizontally */
+    margin-right: 20px;
+    justify-content: space-around;/* Center align the navigation items */
+  }
+  
+  .id ul li {
+    display: flex; /* Display navigation items horizontally */
+    margin-right: 20px;
+    justify-content: space-around;
+     /* Spacing between navigation items */
+  }
+  
+  .id ul li:last-child {
+    margin-right: 0; /* Remove margin from the last navigation item */
+  }
+  
+  .id ul li a {
+    color: #fff; /* Text color of the navigation links */
+    text-decoration: none; /* Remove underline from the navigation links */
+    font-weight: bold; /* Make the navigation links bold */
+  }
+  
+  .id ul li a:hover {
+     /* Underline the navigation link on hover */
+  }
+  

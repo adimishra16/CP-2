@@ -28,6 +28,22 @@ app.use(cors());
 // Middleware for parsing request body
 app.use(express.json());
 
+app.post('/api/schedule', async (req, res) => {
+  try {
+    const currentDate = new Date().toISOString().split('T')[0]; // Get the current date in YYYY-MM-DD format
+    const query = `
+      SELECT id, mDate, mTime, Team1, Team2
+      FROM matchinfo
+      WHERE mDate >= $1
+    `;
+    const result = await pool.query(query, [currentDate]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error executing query', err.stack);
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
+  }
+});
+
 
 // Login endpoint
 app.post('/api/login', (req, res) => {
@@ -48,9 +64,10 @@ app.post('/api/login', (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid username or password' });
     }
     // User exists, return success message with username
-    return res.status(200).json({ success: true, message: 'Login successful', username});
+    return res.status(200).json({ success: true, message: 'Login successful', username });
   });
 });
+
 
 
 
@@ -115,10 +132,13 @@ app.post('/api/add_players', (req, res) => {
 });
 
 
-app.get('/api/players/:mID', (req, res) => {
+app.get('/api/players/:mID/:bat', (req, res) => {
   const mID = req.params.mID;
-  const sql = `SELECT playerName FROM playerInfo WHERE mID = ?`;
-  connection.query(sql, [mID], (err, results) => {
+  const batting_team = req.params.bat;
+  // console.log(mID);
+  // console.log(batting_team);
+  const sql = `SELECT playerName FROM playerInfo WHERE mID = ? AND playerTeam = ? AND Not_out = 1`;
+  connection.query(sql, [mID, batting_team], (err, results) => {
     if (err) {
       console.error('Error fetching player names:', err);
       res.status(500).json({ error: 'Internal server error' });
@@ -128,6 +148,25 @@ app.get('/api/players/:mID', (req, res) => {
     res.json(playerNames);
   });
 });
+app.get('/api/players/:mID/:bat/bowl', (req, res) => {
+  const mID = req.params.mID;
+  const batting_team = req.params.bat;
+  console.log(mID);
+  console.log(batting_team);
+  const sql = `SELECT playerName FROM playerInfo WHERE mID = ? AND playerTeam != ?`;
+  connection.query(sql, [mID, batting_team], (err, results) => {
+    if (err) {
+      console.error('Error fetching player names:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    console.log(playerNames);
+    const playerNames = results.map((row) => row.playerName);
+    res.json(playerNames);
+  });
+});
+
+
 
 // Route to get match information
 app.get('/api/get_match_info', (req, res) => {

@@ -11,7 +11,7 @@ import axios from 'axios';
 const CricketScoreboard = () => {
     const location = useLocation();
     const { team1, team2, mID, overs: total_overs } = location.state;
-    const [batting_team,setBatting_team] = useState(team1);
+    const [batting_team, setBatting_team] = useState('');
     const [batsman1, setBatsman1] = useState('');
     const [batsman2, setBatsman2] = useState('');
     const [batsman1Stats, setBatsman1Stats] = useState({ runs: 0, balls: 0, fours: 0, sixes: 0, ballsFaced: 0, strikeRate: 0 });
@@ -90,7 +90,8 @@ const CricketScoreboard = () => {
     useEffect(() => {
         const fetchPlayers = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/players/${location.state.mID}`);
+                var bat = batting_team;
+                const response = await fetch(`http://localhost:8000/api/players/${location.state.mID}/${bat}`);
                 if (response.ok) {
                     const data = await response.json();
                     setBatsmen(data);
@@ -104,6 +105,31 @@ const CricketScoreboard = () => {
         };
         fetchPlayers();
     }, [location.state.mID]);
+    useEffect(() => {
+        const fetchPlayers = async () => {
+            if (!batting_team =='') {
+                try {
+                const { mID } = location.state;
+                const batting_team = batting_team; // Assuming batting_team is defined somewhere
+                const responseBatting = await fetch(`http://localhost:8000/api/players/${mID}/${batting_team}`);
+                const responseBowling = await fetch(`http://localhost:8000/api/players/${mID}/${batting_team}/bowl`); // Assuming opponentTeam is defined somewhere
+                if (responseBatting.ok && responseBowling.ok) {
+                    const dataBatting = await responseBatting.json();
+                    const dataBowling = await responseBowling.json();
+                    setBatsmen(dataBatting);
+                    setBowlers(dataBowling);
+                } else {
+                    console.error('Failed to fetch player names');
+                }
+            } catch (error) {
+                console.error('Error occurred while fetching player names:', error);
+            }
+            }
+
+        };
+        fetchPlayers();
+    }, [location.state.mID]);
+
 
     const handleBattingTeamChange = (e) => {
         setBattingTeam(e.target.value);
@@ -119,18 +145,19 @@ const CricketScoreboard = () => {
         const decimalPart = Math.round((overs - integerPart) * 10);
         return `${integerPart}.${decimalPart}`;
     };
-    const TeamSelectionForm = ({ team1, team2 }) => {
-        const [selectedTeam, setSelectedTeam] = useState(team1);
-        const[batting_team,setBatting_team]=useState(false);
-        const handleTeamChange = (e) => {
-            setSelectedTeam(e.target.value);
-        };
-    
-        const handleSubmit = (e) => {
-            e.preventDefault();
-            setBatting_team(selectedTeam);
-            setBatting_team(true);
-        }};
+    // const TeamSelectionForm = ({ team1, team2 }) => {
+    //     const [selectedTeam, setSelectedTeam] = useState(team1);
+    //     const [batting_team, setBatting_team] = useState(false);
+    //     const handleTeamChange = (e) => {
+    //         setSelectedTeam(e.target.value);
+    //     };
+
+    //     const handleSubmit = (e) => {
+    //         e.preventDefault();
+    //         setBatting_team(selectedTeam);
+    //         setBatting_team(true);
+    //     }
+    // };
 
     const updateScore = (runs) => {
         setScore(score + runs);
@@ -245,7 +272,7 @@ const CricketScoreboard = () => {
         setBowler('');
     };
 
-        
+
     const handleNextOver = () => {
         // Increment overs
         const updatedOvers = overs + 1;
@@ -380,7 +407,7 @@ const CricketScoreboard = () => {
         updateOversonly(0.1);
     };
 
-    
+
     const updateExtras3 = (value) => {
         value = parseInt(value);
         setScore(score + value);
@@ -474,299 +501,300 @@ const CricketScoreboard = () => {
         }
         setOverSummary(newOverSummary);
     };
-        const [formSubmitted, setFormSubmitted] = useState(false);
-    
-        const handleTeamChange = (e) => {
-            setBatting_team(e.target.value);
-        };
-    
-        const handleSubmit = (e) => {
-            e.preventDefault();
-            setFormSubmitted(true);
-        };
+    const [formSubmitted, setFormSubmitted] = useState(false);
+
+    // const handleTeamChange = (e) => {
+    //     setBatting_team(e.target.value);
+    // };
+
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const selectedTeam = document.querySelector('input[name="team"]:checked').value;
+        setBatting_team(selectedTeam);
+        setFormSubmitted(true);
+    };
 
     return (
 
-        
+
         <div>
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label>
-                    <input
-                        type="radio"
-                        value={team1}
-                        name='team'
-                        onChange={handleTeamChange}
-                    />
-                    {team1}
-                </label>
-            </div>
-            <div>
-                <label>
-                    <input
-                        type="radio"
-                        value={team2}
-                        name='team'
-                        onChange={handleTeamChange}
-                    />
-                    {team2}
-                </label>
-            </div>
-            <button type="submit">Submit</button>
-            {formSubmitted && <p>Form submitted!</p>}
-        </form>
-        {formSubmitted && 
-        <>
-        {battingTeam && (
-            // Rest of the component's JSX code
-            <div>
-                {/* Navbar */}
-                <nav className="navbar">
-                    <div className="navbar-brand">
-                        <span>{battingTeam}</span>
-                        <span> vs </span>
-                        <span> Team 2</span>
+            <form onSubmit={handleSubmit}>
+                <div>
+                    <label>
+                        <input
+                            type="radio"
+                            value={team1}
+                            name="team"
+                        />
+                        {team1}
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input
+                            type="radio"
+                            value={team2}
+                            name="team"
+                        />
+                        {team2}
+                    </label>
+                </div>
+                <button type="submit">Submit</button>
+                {formSubmitted && <p>Form submitted! Selected team: {batting_team}</p>}
+            </form>
+            {formSubmitted &&
+                <>
+                    {battingTeam && (
+                        // Rest of the component's JSX code
+                        <div>
+                            {/* Navbar */}
+                            <nav className="navbar">
+                                <div className="navbar-brand">
+                                    <span>{battingTeam}</span>
+                                    <span> vs </span>
+                                    <span> Team 2</span>
+                                </div>
+                            </nav>
+                            {/* Rest of the component's JSX code */}
+                        </div>
+                    )}
+                    {/* Navbar */}
+                    <nav className="navbar">
+                        <div className="navbar-brand">
+                            <span>Team 1 </span>
+                            <span>vs</span>
+                            <span> Team 2</span>
+                        </div>
+                    </nav>
+                    <div className="Score">
+                        <span>Team 1: {score}/{wickets} ({formatOvers(overs)})</span>
                     </div>
-                </nav>
-                {/* Rest of the component's JSX code */}
-            </div>
-        )}
-        {/* Navbar */}
-        <nav className="navbar">
-            <div className="navbar-brand">
-                <span>Team 1 </span>
-                <span>vs</span>
-                <span> Team 2</span>
-            </div>
-        </nav>
-        <div className="Score">
-            <span>Team 1: {score}/{wickets} ({formatOvers(overs)})</span>
-        </div>
-        <div className="cricket-scoreboard">
-            <div>
-                <label>Batsman 1:</label>
-                <select value={batsman1} onChange={(e) => handleBatsmanChange(e, 1)}>
-                    <option value="">Select Batsman</option>
-                    {batsmen.map((player) => (
-                        <option key={player} value={player}>{player}</option>
-                    ))}
-                </select>
-                {!batsman1Locked && <button onClick={() => handleSaveBatsman(1)}>Save</button>}
-            </div>
-            <div>
-                <label>Batsman 2:</label>
-                <select value={batsman2} onChange={(e) => handleBatsmanChange(e, 0)}>
-                    <option value="">Select Batsman</option>
-                    {batsmen.map((player) => (
-                        <option key={player} value={player}>{player}</option>
-                    ))}
-                </select>
-                {!batsman2Locked && <button onClick={() => handleSaveBatsman(2)}>Save</button>}
-            </div>
-            <div>
-                <label>Bowler:</label>
-                <select value={bowler} onChange={(e) => setBowler(e.target.value)}>
-                    <option value="">Select Bowler</option>
-                    {bowlers.map((player) => (
-                        <option key={player} value={player}>{player}</option>
-                    ))}
-                </select>
-                {!bowlerLocked && <button onClick={handleSaveBowler}>Save</button>}
-            </div>
-        </div>
-        {/* Check if batsmen and bowler are locked */}
-        {(batsman1Locked && batsman2Locked && bowlerLocked) && (
-            <div>
-                {/* Over Info */}
-                <div className="over-info">
-                    {overSummary.map((over, index) => (
-                        <div key={index} className="over">
-                            <span>Over {over.over}:</span>
-                            <div className="run-circles">
-                                {[0, 1, 2, 3, 4, 5].map((ballIndex) => (
-                                    <div key={ballIndex} className="run-circle" style={{
-                                        backgroundColor:
-                                            over.runs[ballIndex] === "4" || over.runs[ballIndex] === "6" ? "green" :
-                                                over.runs[ballIndex] === "W" ? "red" :
-                                                    "light gray"
-                                    }}>{over.runs[ballIndex] || "-"}</div>
+                    <div className="cricket-scoreboard">
+                        <div>
+                            <label>Batsman 1:</label>
+                            <select value={batsman1} onChange={(e) => handleBatsmanChange(e, 1)}>
+                                <option value="">Select Batsman</option>
+                                {batsmen.map((player) => (
+                                    <option key={player} value={player}>{player}</option>
+                                ))}
+                            </select>
+                            {!batsman1Locked && <button onClick={() => handleSaveBatsman(1)}>Save</button>}
+                        </div>
+                        <div>
+                            <label>Batsman 2:</label>
+                            <select value={batsman2} onChange={(e) => handleBatsmanChange(e, 0)}>
+                                <option value="">Select Batsman</option>
+                                {batsmen.map((player) => (
+                                    <option key={player} value={player}>{player}</option>
+                                ))}
+                            </select>
+                            {!batsman2Locked && <button onClick={() => handleSaveBatsman(2)}>Save</button>}
+                        </div>
+                        <div>
+                            <label>Bowler:</label>
+                            <select value={bowler} onChange={(e) => setBowler(e.target.value)}>
+                                <option value="">Select Bowler</option>
+                                {bowlers.map((player) => (
+                                    <option key={player.playerName} value={player.playerName}>{player.playerName}</option>
+                                ))}
+                            </select>
+                            {!bowlerLocked && <button onClick={handleSaveBowler}>Save</button>}
+                        </div>
+                    </div>
+                    {/* Check if batsmen and bowler are locked */}
+                    {(batsman1Locked && batsman2Locked && bowlerLocked) && (
+                        <div>
+                            {/* Over Info */}
+                            <div className="over-info">
+                                {overSummary.map((over, index) => (
+                                    <div key={index} className="over">
+                                        <span>Over {over.over}:</span>
+                                        <div className="run-circles">
+                                            {[0, 1, 2, 3, 4, 5].map((ballIndex) => (
+                                                <div key={ballIndex} className="run-circle" style={{
+                                                    backgroundColor:
+                                                        over.runs[ballIndex] === "4" || over.runs[ballIndex] === "6" ? "green" :
+                                                            over.runs[ballIndex] === "W" ? "red" :
+                                                                "light gray"
+                                                }}>{over.runs[ballIndex] || "-"}</div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
+
+                            {/* Batsman Scoreboard */}
+                            <table className="scoreboard">
+                                <thead>
+                                    <tr>
+                                        <th>Batsman</th>
+                                        <th>Runs</th>
+                                        <th>Balls</th>
+                                        <th>4s</th>
+                                        <th>6s</th>
+                                        <th>Strike Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{strikeBatsman === 1 ? '*' : ''}{batsman1}</td>
+                                        <td>{batsman1Stats.runs}</td>
+                                        <td>{batsman1Stats.ballsFaced}</td>
+                                        <td>{batsman1Stats.fours}</td>
+                                        <td>{batsman1Stats.sixes}</td>
+                                        <td>{batsman1Stats.strikeRate.toFixed(2)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{strikeBatsman === 2 ? '*' : ''}{batsman2}</td>
+                                        <td>{batsman2Stats.runs}</td>
+                                        <td>{batsman2Stats.ballsFaced}</td>
+                                        <td>{batsman2Stats.fours}</td>
+                                        <td>{batsman2Stats.sixes}</td>
+                                        <td>{batsman2Stats.strikeRate.toFixed(2)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            {/* Bowler Scoreboard */}
+                            <table className="scoreboard">
+                                <thead>
+                                    <tr>
+                                        <th>Bowler</th>
+                                        <th>Overs</th>
+                                        <th>run</th>
+                                        <th>Wickets</th>
+                                        <th>Economy</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{bowler}</td>
+                                        <td>{formatOvers(bowlerStats.overs)}</td>
+                                        <td>{bowlerStats.runs}</td>
+                                        <td>{bowlerStats.wickets}</td>
+                                        <td>{bowlerStats.economy.toFixed(2)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            {/* Extras */}
+                            <table className="scoreboard">
+                                <thead>
+                                    <tr>
+                                        <th>Extras</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Total</td>
+                                        <td>{parseInt(extras.wide) + parseInt(extras.noBall) + parseInt(extras.legByes)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            {/* Buttons */}
+                            <div className="buttons">
+                                {/* Buttons */}
+                                <div className="button-group">
+                                    {[0, 1, 2, 3, 4, 5, 6].map((run, index) => (
+                                        <button key={index} onClick={() => {
+                                            updateScore(run);
+                                            sendDataToBackend();
+                                        }}>{run}</button>
+                                    ))}
+                                </div>
+                                <button className="wicket-button" onClick={handleOpenWicketDialog} style={{ backgroundColor: "red" }}>Wicket</button>
+                                {/* Checkboxes */}
+                                <div className="checkbox-group">
+                                    <div className="checkbox-container">
+                                        <select onChange={(e) => {
+                                            updateExtras1(e.target.value);
+                                            sendDataToBackend();
+                                        }}>
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                        </select>
+                                        <label htmlFor="legByes">noBall</label>
+                                    </div>
+                                    <div className="checkbox-container">
+                                        <select onChange={(e) => {
+                                            updateExtras2(e.target.checked, e.target.value)
+                                            sendDataToBackend();
+                                        }}>
+                                            <option value="">Select Runs</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                        </select>
+                                        <label htmlFor="penalty">Penalty/legbyes</label>
+                                    </div>
+                                    <div className="checkbox-container">
+                                        <select onChange={(e) => {
+                                            updateExtras3(e.target.value)
+                                            sendDataToBackend();
+                                        }}>
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                        </select>
+                                        <label htmlFor="legByes">Wide</label>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            {/* Wicket Dialog */}
+                            <Modal
+                                isOpen={isWicketDialogOpen}
+                                onRequestClose={handleCloseWicketDialog}
+                                contentLabel="Wicket Options"
+                                className="wicket-dialog"
+                                overlayClassName="wicket-overlay"
+                            >
+                                <h2>Choose Wicket Option</h2>
+                                <div>
+                                    <input type="radio" id="bowled" name="wicketOption" value="Bowled" onChange={handleWicketOptionChange} />
+                                    <label htmlFor="bowled">Bowled</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="hitWicket" name="wicketOption" value="Hit Wicket" onChange={handleWicketOptionChange} />
+                                    <label htmlFor="hitWicket">Hit Wicket</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="caught" name="wicketOption" value="Caught" onChange={handleWicketOptionChange} />
+                                    <label htmlFor="caught">Caught</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="runOut" name="wicketOption" value="Run Out" onChange={handleWicketOptionChange} />
+                                    <label htmlFor="runOut">Run Out</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="stump" name="wicketOption" value="Stump" onChange={handleWicketOptionChange} />
+                                    <label htmlFor="stump">Stump</label>
+                                </div>
+                                <button onClick={handleWicketConfirm}>Confirm</button>
+                                <button onClick={handleCloseWicketDialog}>Cancel</button>
+                            </Modal>
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
 
-                {/* Batsman Scoreboard */}
-                <table className="scoreboard">
-                    <thead>
-                        <tr>
-                            <th>Batsman</th>
-                            <th>Runs</th>
-                            <th>Balls</th>
-                            <th>4s</th>
-                            <th>6s</th>
-                            <th>Strike Rate</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{strikeBatsman === 1 ? '*' : ''}{batsman1}</td>
-                            <td>{batsman1Stats.runs}</td>
-                            <td>{batsman1Stats.ballsFaced}</td>
-                            <td>{batsman1Stats.fours}</td>
-                            <td>{batsman1Stats.sixes}</td>
-                            <td>{batsman1Stats.strikeRate.toFixed(2)}</td>
-                        </tr>
-                        <tr>
-                            <td>{strikeBatsman === 2 ? '*' : ''}{batsman2}</td>
-                            <td>{batsman2Stats.runs}</td>
-                            <td>{batsman2Stats.ballsFaced}</td>
-                            <td>{batsman2Stats.fours}</td>
-                            <td>{batsman2Stats.sixes}</td>
-                            <td>{batsman2Stats.strikeRate.toFixed(2)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                {/* Bowler Scoreboard */}
-                <table className="scoreboard">
-                    <thead>
-                        <tr>
-                            <th>Bowler</th>
-                            <th>Overs</th>
-                            <th>run</th>
-                            <th>Wickets</th>
-                            <th>Economy</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{bowler}</td>
-                            <td>{formatOvers(bowlerStats.overs)}</td>
-                            <td>{bowlerStats.runs}</td>
-                            <td>{bowlerStats.wickets}</td>
-                            <td>{bowlerStats.economy.toFixed(2)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                {/* Extras */}
-                <table className="scoreboard">
-                    <thead>
-                        <tr>
-                            <th>Extras</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Total</td>
-                            <td>{parseInt(extras.wide) + parseInt(extras.noBall) + parseInt(extras.legByes)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                {/* Buttons */}
-                <div className="buttons">
-                    {/* Buttons */}
-                    <div className="button-group">
-                        {[0, 1, 2, 3, 4, 5, 6].map((run, index) => (
-                            <button key={index} onClick={() => {
-                                updateScore(run);
-                                sendDataToBackend();
-                            }}>{run}</button>
-                        ))}
-                    </div>
-                    <button className="wicket-button" onClick={handleOpenWicketDialog} style={{ backgroundColor: "red" }}>Wicket</button>
-                    {/* Checkboxes */}
-                    <div className="checkbox-group">
-                        <div className="checkbox-container">
-                            <select onChange={(e) => {
-                                updateExtras1(e.target.value);
-                                sendDataToBackend();
-                            }}>
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                            </select>
-                            <label htmlFor="legByes">noBall</label>
-                        </div>
-                        <div className="checkbox-container">
-                            <select onChange={(e) => {
-                                updateExtras2(e.target.checked, e.target.value)
-                                sendDataToBackend();
-                            }}>
-                                <option value="">Select Runs</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                            </select>
-                            <label htmlFor="penalty">Penalty/legbyes</label>
-                        </div>
-                        <div className="checkbox-container">
-                            <select onChange={(e) => {
-                                updateExtras3(e.target.value)
-                                sendDataToBackend();
-                            }}>
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                            </select>
-                            <label htmlFor="legByes">Wide</label>
-                        </div>
-
-                    </div>
-                </div>
-
-                {/* Wicket Dialog */}
-                <Modal
-                    isOpen={isWicketDialogOpen}
-                    onRequestClose={handleCloseWicketDialog}
-                    contentLabel="Wicket Options"
-                    className="wicket-dialog"
-                    overlayClassName="wicket-overlay"
-                >
-                    <h2>Choose Wicket Option</h2>
-                    <div>
-                        <input type="radio" id="bowled" name="wicketOption" value="Bowled" onChange={handleWicketOptionChange} />
-                        <label htmlFor="bowled">Bowled</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="hitWicket" name="wicketOption" value="Hit Wicket" onChange={handleWicketOptionChange} />
-                        <label htmlFor="hitWicket">Hit Wicket</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="caught" name="wicketOption" value="Caught" onChange={handleWicketOptionChange} />
-                        <label htmlFor="caught">Caught</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="runOut" name="wicketOption" value="Run Out" onChange={handleWicketOptionChange} />
-                        <label htmlFor="runOut">Run Out</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="stump" name="wicketOption" value="Stump" onChange={handleWicketOptionChange} />
-                        <label htmlFor="stump">Stump</label>
-                    </div>
-                    <button onClick={handleWicketConfirm}>Confirm</button>
-                    <button onClick={handleCloseWicketDialog}>Cancel</button>
-                </Modal>
-            </div>
-        )}
-        </>
-
-        }
-    </div>
-);
+            }
+        </div>
+    );
 };
 
 export default CricketScoreboard;

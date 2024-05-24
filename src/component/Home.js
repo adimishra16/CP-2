@@ -3,6 +3,8 @@ import Card from './Card';
 import axios from 'axios';
 import './Card.css';
 import { useLocation } from 'react-router-dom';
+import News from './News'
+import HomeNavbar from './HomeNavbar/HomeNavbar'
 
 const Home = () => {
   const [matches, setMatches] = useState([]);
@@ -33,24 +35,30 @@ const Home = () => {
   };
 
   return (
-    <div className="card-container">
-      <h1 className="h1">Matches For You</h1>
-      {isLoggedin && <p>Welcome, {username}!</p>}
-      <div className="matches-container" ref={matchesContainerRef}>
-        {matches.length > 0 ? (
-          matches.map(match => <Card key={match.mID} match={match} />)
-        ) : (
-          <p>No matches found</p>
-        )}
+    <div>
+      <div>
+        <HomeNavbar />
       </div>
-      <div className="button-container">
-        <button className="scroll-button left" onClick={handleScrollLeft}>
-          &lt;
-        </button>
-        <button className="scroll-button right" onClick={handleScrollRight}>
-          &gt;
-        </button>
+      <div className="card-container">
+        <h1 className="h1">Matches For You</h1>
+        {isLoggedin && <p>Welcome, {username}!</p>}
+        <div className="matches-container" ref={matchesContainerRef}>
+          {matches.length > 0 ? (
+            matches.map(match => <Card key={match.mID} match={match} />)
+          ) : (
+            <p>No matches found</p>
+          )}
+        </div>
+        <div className="button-container">
+          <button className="scroll-button left" onClick={handleScrollLeft}>
+            &lt;
+          </button>
+          <button className="scroll-button right" onClick={handleScrollRight}>
+            &gt;
+          </button>
+        </div>
       </div>
+      <div><News /></div>
     </div>
   );
 };
