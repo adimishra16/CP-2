@@ -28,22 +28,6 @@ app.use(cors());
 // Middleware for parsing request body
 app.use(express.json());
 
-app.post('/api/schedule', async (req, res) => {
-  try {
-    const currentDate = new Date().toISOString().split('T')[0]; // Get the current date in YYYY-MM-DD format
-    const query = `
-      SELECT id, mDate, mTime, Team1, Team2
-      FROM matchinfo
-      WHERE mDate >= $1
-    `;
-    const result = await pool.query(query, [currentDate]);
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Error executing query', err.stack);
-    res.status(500).json({ error: 'Internal Server Error', details: err.message });
-  }
-});
-
 
 // Login endpoint
 app.post('/api/login', (req, res) => {
@@ -67,7 +51,6 @@ app.post('/api/login', (req, res) => {
     return res.status(200).json({ success: true, message: 'Login successful', username });
   });
 });
-
 
 
 
@@ -132,13 +115,10 @@ app.post('/api/add_players', (req, res) => {
 });
 
 
-app.get('/api/players/:mID/:bat', (req, res) => {
+app.get('/api/players/:mID', (req, res) => {
   const mID = req.params.mID;
-  const batting_team = req.params.bat;
-  // console.log(mID);
-  // console.log(batting_team);
-  const sql = `SELECT playerName FROM playerInfo WHERE mID = ? AND playerTeam = ? AND Not_out = 1`;
-  connection.query(sql, [mID, batting_team], (err, results) => {
+  const sql = `SELECT playerName FROM playerInfo WHERE mID = ?`;
+  connection.query(sql, [mID], (err, results) => {
     if (err) {
       console.error('Error fetching player names:', err);
       res.status(500).json({ error: 'Internal server error' });
@@ -148,25 +128,6 @@ app.get('/api/players/:mID/:bat', (req, res) => {
     res.json(playerNames);
   });
 });
-app.get('/api/players/:mID/:bat/bowl', (req, res) => {
-  const mID = req.params.mID;
-  const batting_team = req.params.bat;
-  console.log(mID);
-  console.log(batting_team);
-  const sql = `SELECT playerName FROM playerInfo WHERE mID = ? AND playerTeam != ?`;
-  connection.query(sql, [mID, batting_team], (err, results) => {
-    if (err) {
-      console.error('Error fetching player names:', err);
-      res.status(500).json({ error: 'Internal server error' });
-      return;
-    }
-    console.log(playerNames);
-    const playerNames = results.map((row) => row.playerName);
-    res.json(playerNames);
-  });
-});
-
-
 
 // Route to get match information
 app.get('/api/get_match_info', (req, res) => {
@@ -182,7 +143,19 @@ app.get('/api/get_match_info', (req, res) => {
   });
 });
 
+app.get('/api/schedule', (req, res) => {
+  const query = 'SELECT mDate,mTime,Team1,Team2 FROM matchinfo';
 
+  connection.query(query, (err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      res.status(500).json({ error: 'Failed to fetch matches' });
+      return;
+    }
+
+    res.json(results);
+  });
+});
 
 // Route to get player information based on match ID
 app.get('/api/get_players/:matchID', (req, res) => {
@@ -335,7 +308,6 @@ app.get('/api/match/get_score/update-stream/:mID', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-
   const intervalId = setInterval(() => {
     const selectQuery = 'SELECT * FROM match_data WHERE id = ? ORDER BY created_at DESC LIMIT 1';
     connection.query(selectQuery, [mID], (err, results) => {

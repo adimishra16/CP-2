@@ -25,6 +25,7 @@ const Home = () => {
     };
     fetchMatches();
   }, []);
+  
 
   const handleScrollLeft = () => {
     matchesContainerRef.current.scrollLeft -= 400;
